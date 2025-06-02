@@ -1,4 +1,6 @@
 import argparse
+import tokenize
+from Lexical_Analyzer.lexical_analyzer import tokenize, show_tokens
 
 def main():
     parser = argparse.ArgumentParser(description='Run and debug RPAL programs.')
@@ -12,7 +14,7 @@ def main():
     input_text = input_file.read()
     input_file.close()
 
-    print(input_text)
+    show_tokens(tokenize(input_text))
 
     if args.ast:
         print('Make AST here')
