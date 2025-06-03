@@ -2,7 +2,7 @@ import argparse
 import tokenize
 from Lexical_Analyzer.lexical_analyzer import tokenize, show_tokens
 from Parser.parser import RPALParser
-from Standardizer.standaradizer import build_tree, standardize_tree
+from Standardizer.standaradizer import build_tree, standardize_tree, print_tree
 
 def main():
     parser = argparse.ArgumentParser(description='Run RPAL programs.')
@@ -38,7 +38,7 @@ def main():
     tree_root = build_tree(string_ast)
     standardized_root = standardize_tree(tree_root.children[0])
     if args.sast:
-        print(standardized_root)
+        print_tree(standardized_root)
         return
 
 if __name__ == "__main__":

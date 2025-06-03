@@ -98,75 +98,67 @@ def build_tree(input_str):
 
 
 def print_tree(node, indent=0):
-    print("  " * indent + node.value)
+    print("." * indent + node.value)
     for child in node.children:
         print_tree(child, indent + 1)
 
-# Sample Input
-input_text = """
-let
-.rec
-..function_form
-...f
-...n
-...->
-....eq
-.....n
-.....1
-....0
-....->
-.....eq
-......n
-......2
-.....1
-.....+
-......gamma
-.......f
-.......-
-........n
-........1
-......gamma
-.......f
-.......-
-........n
-........2
-.let
-..rec
-...function_form
-....fib
-....n
-....->
-.....eq
-......n
-......0
-.....nil
-.....aug
-......gamma
-.......fib
-......-
-.......n
-.......1
-......gamma
-.......f
-.......n
-..gammma
-...print
-...gamma
-....fib
-....5
+# # Sample Input
+# input_text = """
+# let
+# .rec
+# ..function_form
+# ...f
+# ...n
+# ...->
+# ....eq
+# .....n
+# .....1
+# ....0
+# ....->
+# .....eq
+# ......n
+# ......2
+# .....1
+# .....+
+# ......gamma
+# .......f
+# .......-
+# ........n
+# ........1
+# ......gamma
+# .......f
+# .......-
+# ........n
+# ........2
+# .let
+# ..rec
+# ...function_form
+# ....fib
+# ....n
+# ....->
+# .....eq
+# ......n
+# ......0
+# .....nil
+# .....aug
+# ......gamma
+# .......fib
+# ......-
+# .......n
+# .......1
+# ......gamma
+# .......f
+# .......n
+# ..gammma
+# ...print
+# ...gamma
+# ....fib
+# ....5
 
 
 
-"""
+# """
 
-# Build and standardize tree
-tree_root = build_tree(input_text)
-standardized_root = standardize_tree(tree_root.children[0])
-
-# Generate control structures
-# generator = ControlStructureGenerator()
-# control_structures = generator.generate(standardized_root)
-
-# # Print control structures
-# for name, items in control_structures.items():
-#     print(f"{name} = {' '.join(items)}")
+# # Build and standardize tree
+# tree_root = build_tree(input_text)
+# standardized_root = standardize_tree(tree_root.children[0])
