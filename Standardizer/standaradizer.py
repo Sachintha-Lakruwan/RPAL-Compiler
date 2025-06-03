@@ -162,3 +162,11 @@ def print_tree(node, indent=0):
 # # Build and standardize tree
 # tree_root = build_tree(input_text)
 # standardized_root = standardize_tree(tree_root.children[0])
+
+# Generate control structures
+# generator = ControlStructureGenerator()
+# control_structures = generator.generate(standardized_root)
+
+# # Print control structures
+# for name, items in control_structures.items():
+#     print(f"{name} = {' '.join(items)}")
