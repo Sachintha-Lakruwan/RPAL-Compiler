@@ -2,6 +2,7 @@ import argparse
 import tokenize
 from Lexical_Analyzer.lexical_analyzer import tokenize, show_tokens
 from Parser.parser import RPALParser
+from Standardizer.standaradizer import build_tree, standardize_tree
 
 def main():
     parser = argparse.ArgumentParser(description='Run RPAL programs.')
@@ -23,10 +24,21 @@ def main():
         return
     
     # Abstract Syntax Tree (AST)
-    string_ast = parser.generate_string_representation()
+    string_ast_list = parser.generate_string_representation()
+
+    string_ast = ""
+    for string in string_ast_list:
+        string_ast += string + "\n"
+
     if args.ast:
-        for string in string_ast:
-            print(string)
+        print(string_ast)
+        return
+
+    # Standard Abstract Syntax Tree (SAST)
+    tree_root = build_tree(string_ast)
+    standardized_root = standardize_tree(tree_root.children[0])
+    if args.sast:
+        print(standardized_root)
         return
 
 if __name__ == "__main__":

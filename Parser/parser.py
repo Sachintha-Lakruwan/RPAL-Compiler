@@ -94,7 +94,7 @@ class RPALParser:
     def append_node_string(self, indentation, node):
         if node.type in [ASTNodeType.identifier, ASTNodeType.integer, ASTNodeType.string, ASTNodeType.true_value,
                          ASTNodeType.false_value, ASTNodeType.nil, ASTNodeType.dummy]:
-            self.tree_strings.append(indentation + "<" + node.type.name.upper() + ":" + node.value + ">")
+            self.tree_strings.append(indentation + node.value)
         elif node.type == ASTNodeType.fcn_form:
             self.tree_strings.append(indentation + "function_form")
         else:
