@@ -1,0 +1,653 @@
+class CSEMachine:
+    def __init__(self):
+        self.control = []  # Control stack (LIFO - rightmost element is popped first)
+        self.stack = []    # Stack (LIFO)
+        self.environments = {"e0": {}}  # Environment storage
+        self.env_counter = 0  # To generate new environment names
+        
+        self.deltas = {
+            "delta0": ["gamma", "lambda1Sum", "lambda2A"],
+            "delta1": ["gamma", "Print", "gamma", "Sum", "tau", "1", "2", "3", "4", "5"],
+            "delta2": ["gamma", "lambda3Psum", "gamma", "Y", "lambda4Psum"],
+            "delta3": ["gamma", "Psum", "tau5", "A", "gamma", "Order", "A"],
+            "delta4": ["lambda5T,N"],
+            "delta5": ["delta6", "delta7", "beta", "eq", "N", "0"],
+            "delta6": ["0"],
+            "delta7": ["+", "gamma", "Psum", "tau2", "T", "-", "N", "1", "gamma", "T", "N"],
+        }
+        
+        # Built-in functions
+        self.builtins = {
+            "Print": self._builtin_print,
+            "Order": self._builtin_order,
+            "eq": self._builtin_eq,
+        }
+        
+        # Binary operators
+        self.binary_operators = {
+            '+', '-', '*', '<', '>', '&', '.', '@', '/', ':', '=', '˜', '|',
+            '!', '#', '%', 'ˆ', '_', '[', ']', '{', '}', '"', "'", '?'
+        }
+    
+    def _builtin_print(self, value):
+        print(f"Output: {value}")
+        return value
+    
+    def _builtin_order(self, value):
+        """Returns the length/order of a tuple"""
+        if isinstance(value, str):
+            # Handle tuple representation like "(1, 2, 3, 4, 5)"
+            if value.startswith('(') and value.endswith(')'):
+                inner = value[1:-1].strip()
+                if inner == "":
+                    return 0  # Empty tuple
+                # Count comma-separated elements
+                elements = [elem.strip() for elem in inner.split(',')]
+                return len(elements)
+            else:
+                # Single element (not a tuple)
+                return 1
+        elif isinstance(value, (list, tuple)):
+            return len(value)
+        else:
+            # Single element
+            return 1
+    
+    def _builtin_eq(self, val1, val2):
+        """Equality comparison with type conversion"""
+        # Helper function to convert string numbers to integers if possible
+        def convert_if_number(val):
+            if isinstance(val, str) and val.isdigit():
+                return int(val)
+            elif isinstance(val, str) and val.lstrip('-').isdigit():  # Handle negative numbers
+                return int(val)
+            return val
+        
+        # Convert both values if they are numeric strings
+        converted_val1 = convert_if_number(val1)
+        converted_val2 = convert_if_number(val2)
+        
+        # If one is int and the other is convertible, ensure both are int
+        if isinstance(converted_val1, int) and not isinstance(converted_val2, int):
+            converted_val2 = convert_if_number(val2)
+        elif isinstance(converted_val2, int) and not isinstance(converted_val1, int):
+            converted_val1 = convert_if_number(val1)
+        
+        print(f"Eq comparison: {val1} ({type(val1)}) vs {val2} ({type(val2)}) -> {converted_val1} vs {converted_val2}")
+        
+        return converted_val1 == converted_val2
+    
+    def apply_binary_operator(self, operator, left_operand, right_operand):
+        """Apply binary operator to two operands"""
+        try:
+            # Convert string numbers to integers if possible
+            def convert_if_number(val):
+                if isinstance(val, str) and val.isdigit():
+                    return int(val)
+                return val
+            
+            left = convert_if_number(left_operand)
+            right = convert_if_number(right_operand)
+            
+            if operator == '+':
+                return left + right
+            elif operator == '-':
+                return left - right
+            elif operator == '*':
+                return left * right
+            elif operator == '/':
+                if right != 0:
+                    return left / right
+                else:
+                    return "Division by zero error"
+            elif operator == '<':
+                return left < right
+            elif operator == '>':
+                return left > right
+            elif operator == '=':
+                return left == right
+            elif operator == '&':
+                return left and right
+            elif operator == '|':
+                return left or right
+            elif operator == '.':
+                # String concatenation or other dot operation
+                return str(left) + str(right)
+            elif operator == '@':
+                # List/tuple concatenation or custom operation
+                if isinstance(left, str) and isinstance(right, str):
+                    return left + right
+                return f"{left}@{right}"
+            elif operator == ':':
+                # Colon operation (could be list construction, etc.)
+                return f"{left}:{right}"
+            elif operator == '˜':
+                # Tilde operation
+                return f"{left}˜{right}"
+            elif operator == '$':
+                # Dollar operation
+                return f"{left}${right}"
+            elif operator == '!':
+                # Factorial or negation-like operation
+                return f"{left}!{right}"
+            elif operator == '#':
+                # Hash operation
+                return f"{left}#{right}"
+            elif operator == '%':
+                # Modulo operation
+                return left % right
+            elif operator == 'ˆ':
+                # Power operation
+                return left ** right
+            elif operator == '_':
+                # Underscore operation
+                return f"{left}_{right}"
+            elif operator == '[':
+                # Left bracket operation
+                return f"{left}[{right}"
+            elif operator == ']':
+                # Right bracket operation
+                return f"{left}]{right}"
+            elif operator == '{':
+                # Left brace operation
+                return f"{left}{{{right}"
+            elif operator == '}':
+                # Right brace operation
+                return f"{left}}}{right}"
+            elif operator == '"':
+                # Quote operation
+                return f'{left}"{right}'
+            elif operator == "'":
+                # Single quote operation
+                return f"{left}'{right}"
+            elif operator == '?':
+                # Question mark operation (ternary-like)
+                return f"{left}?{right}"
+            else:
+                return f"Unknown operator: {operator}"
+                
+        except Exception as e:
+            return f"Error applying {operator}: {e}"
+    
+    def parse_tuple(self, tuple_str):
+        """Parse tuple string like '(1, 2, 3)' or '(5, (5, 4, 3, 2, 1))' into list of elements"""
+        if isinstance(tuple_str, str) and tuple_str.startswith('(') and tuple_str.endswith(')'):
+            inner = tuple_str[1:-1].strip()
+            if inner == "":
+                return []  # Empty tuple
+            
+            # Parse elements while respecting nested parentheses
+            elements = []
+            current_element = ""
+            paren_depth = 0
+            
+            for char in inner:
+                if char == ',' and paren_depth == 0:
+                    # Found a top-level comma separator
+                    elem = current_element.strip()
+                    if elem:
+                        # Try to convert to int if possible, otherwise keep as string
+                        try:
+                            elements.append(int(elem))
+                        except ValueError:
+                            elements.append(elem)
+                    current_element = ""
+                else:
+                    # Add character to current element
+                    current_element += char
+                    if char == '(':
+                        paren_depth += 1
+                    elif char == ')':
+                        paren_depth -= 1
+            
+            # Add the last element
+            elem = current_element.strip()
+            if elem:
+                try:
+                    elements.append(int(elem))
+                except ValueError:
+                    elements.append(elem)
+            
+            return elements
+        return [tuple_str]  # Not a tuple, return as single element list
+    
+    def get_current_environment(self):
+        """Get current environment from top of stack"""
+        # Look for environment marker in stack (top-most e'c')
+        for i in range(len(self.stack) - 1, -1, -1):
+            item = self.stack[i]
+            if isinstance(item, str) and item.startswith('e') and item != "eq":
+                return item
+        return "e0"  # Default to e0 if no environment found
+    
+    def create_new_environment(self, base_env, var_bindings):
+        """Create new environment with variable bindings
+        var_bindings can be a dict of {var_name: var_value} or single (var_name, var_value) tuple
+        """
+        self.env_counter += 1
+        new_env_name = f"e{self.env_counter}"
+        
+        # Copy base environment
+        if base_env in self.environments:
+            self.environments[new_env_name] = self.environments[base_env].copy()
+        else:
+            self.environments[new_env_name] = {}
+        
+        # Add new variables
+        if isinstance(var_bindings, dict):
+            for var_name, var_value in var_bindings.items():
+                self.environments[new_env_name][var_name] = var_value
+        else:
+            # Assume it's a (var_name, var_value) tuple for backward compatibility
+            var_name, var_value = var_bindings
+            self.environments[new_env_name][var_name] = var_value
+        
+        return new_env_name
+    
+    def lookup_variable(self, name, env_name):
+        """Look up variable in specified environment"""
+        if env_name in self.environments and name in self.environments[env_name]:
+            return self.environments[env_name][name]
+        elif name in self.builtins:
+            return self.builtins[name]
+        else:
+            # Treat as literal if not found
+            return name
+    
+    def apply_rator_rand(self, rator, rand):
+        """Apply Rator to Rand"""
+        if callable(rator):
+            try:
+                result = rator(rand)
+                print(f"Applied {rator.__name__ if hasattr(rator, '__name__') else rator} to {rand} = {result}")
+                return result
+            except Exception as e:
+                print(f"Error applying {rator} to {rand}: {e}")
+                return f"Error applying {rator} to {rand}"
+        else:
+            print(f"Cannot apply {rator} to {rand} - not callable")
+            return f"Cannot apply {rator} to {rand}"
+    
+    def step(self):
+        """Execute one step of CSE machine"""
+        if not self.control:
+            return False
+        
+        # Pop rightmost element from control (CE)
+        CE = self.control.pop()
+        
+        print(f"CE: {CE}")
+        print(f"Control: {self.control}")
+        print(f"Stack: {self.stack}")
+        print("---")
+        
+        # NEW RULE: Binary Operators
+        if CE in self.binary_operators:
+            if len(self.stack) >= 2:
+                # Pop two elements from stack (right operand first, then left operand)
+                left_operand = self.stack.pop()
+                right_operand = self.stack.pop()
+                
+                print(f"Binary operator {CE}: left={left_operand}, right={right_operand}")
+                
+                # Apply binary operator
+                result = self.apply_binary_operator(CE, left_operand, right_operand)
+                
+                print(f"Binary operator result: {result}")
+                
+                # Push result back to stack
+                self.stack.append(result)
+            else:
+                print(f"Binary operator {CE}: Not enough operands on stack")
+                # Put the operator back or handle error - here we'll just push it as literal
+                self.stack.append(CE)
+        
+        # Rule for 'eq' builtin function
+        elif CE == "eq":
+            if len(self.stack) >= 2:
+                # Pop two elements from stack for comparison
+                right_operand = self.stack.pop()
+                left_operand = self.stack.pop()
+                
+                print(f"Eq operation: left={left_operand}, right={right_operand}")
+                
+                # Apply equality comparison
+                result = self._builtin_eq(left_operand, right_operand)
+                
+                print(f"Eq result: {result}")
+                
+                # Push result back to stack
+                self.stack.append(result)
+            else:
+                print("Eq operation: Not enough operands on stack")
+                self.stack.append(CE)
+        
+        # Rule 1: If CE is a variable name
+        elif isinstance(CE, str) and not CE.startswith(('lambda', 'delta', 'gamma', 'beta', 'tau', 'aug', 'e')):
+            current_env = self.get_current_environment()
+            value = self.lookup_variable(CE, current_env)
+            self.stack.append(value)
+        
+        # Rule 2: If CE is lambda'k'x' (single parameter) or lambda'k'x1,x2...xn (multiple parameters)
+        elif isinstance(CE, str) and CE.startswith('lambda'):
+            # Extract k and parameters from lambda'k'x' or lambda'k'x1,x2...xn
+            lambda_part = CE[6:]  # Remove 'lambda'
+            
+            # Find the boundary between k and parameters
+            k = ""
+            params = ""
+            for i, char in enumerate(lambda_part):
+                if char.isalpha():
+                    k = lambda_part[:i]
+                    params = lambda_part[i:]
+                    break
+            
+            # Parse parameters (split by comma if multiple)
+            param_list = [p.strip() for p in params.split(',')]
+            
+            # Get current environment
+            current_env = self.get_current_environment()
+            
+            # Create lambda object: lambda'c'k'x1,x2...xn'
+            lambda_obj = {
+                'type': 'lambda',
+                'env': current_env,
+                'k': k,
+                'params': param_list  # Now stores list of parameters
+            }
+            self.stack.append(lambda_obj)
+        
+        # Rule 8: If CE is "beta"
+        elif CE == "beta":
+            if len(self.stack) >= 1 and len(self.control) >= 2:
+                # Pop IsTrue from stack
+                IsTrue = self.stack.pop()
+                
+                # Pop D1 and D2 from control
+                D2 = self.control.pop()  # Rightmost first
+                D1 = self.control.pop()
+                
+                print(f"Beta rule: IsTrue={IsTrue}, D1={D1}, D2={D2}")
+                
+                # Choose based on IsTrue value
+                if IsTrue == True or IsTrue == "true" or (isinstance(IsTrue, str) and IsTrue.lower() == "true"):
+                    # Use D1
+                    if D1 in self.deltas:
+                        # Push D1's delta contents to control
+                        delta_contents = self.deltas[D1].copy()
+                        self.control.extend(delta_contents)
+                    else:
+                        # If D1 is not a delta, push it directly
+                        self.control.append(D1)
+                else:
+                    # Use D2
+                    if D2 in self.deltas:
+                        # Push D2's delta contents to control
+                        delta_contents = self.deltas[D2].copy()
+                        self.control.extend(delta_contents)
+                    else:
+                        # If D2 is not a delta, push it directly
+                        self.control.append(D2)
+            else:
+                print("Beta rule: Not enough elements in stack or control")
+        
+        # Rule 9: FIXED TAU RULE - If CE starts with "tau" followed by a number
+        elif isinstance(CE, str) and CE.startswith('tau'):
+            # Extract the number after "tau"
+            try:
+                if len(CE) > 3:  # "tau" + number
+                    num_elements = int(CE[3:])  # Extract number after "tau"
+                else:
+                    # If just "tau" with no number, pop all elements until environment marker
+                    num_elements = None
+                
+                print(f"Tau rule: CE={CE}, num_elements={num_elements}")
+                
+                if num_elements is not None:
+                    # Pop exactly num_elements from stack
+                    elements_to_pop = []
+                    for i in range(num_elements):
+                        if self.stack:
+                            element = self.stack.pop()
+                            # Skip environment markers
+                            if isinstance(element, str) and element.startswith('e') and element != "eq":
+                                # Put environment marker back and don't count it
+                                self.stack.append(element)
+                                continue
+                            elements_to_pop.append(element)
+                        else:
+                            break  # Not enough elements on stack
+                    
+                    # Reverse to get original order (since we popped from top)
+                    elements_to_pop = elements_to_pop[::-1]
+                else:
+                    # Original behavior for just "tau" - pop until environment marker
+                    elements_to_pop = []
+                    temp_stack = []
+                    while self.stack:
+                        element = self.stack.pop()
+                        if isinstance(element, str) and element.startswith('e') and element != "eq":
+                            # Hit environment marker, put it back
+                            self.stack.append(element)
+                            break
+                        temp_stack.append(element)
+                    
+                    # Reverse to get original order
+                    elements_to_pop = temp_stack[::-1]
+                
+                # Create tuple representation
+                if elements_to_pop:
+                    tuple_repr = f"({', '.join(str(x) for x in elements_to_pop)})"
+                else:
+                    tuple_repr = "()"
+                
+                print(f"Tau rule: Created tuple {tuple_repr} from elements {elements_to_pop}")
+                
+                # Push tuple back to stack
+                self.stack.append(tuple_repr)
+                
+            except ValueError:
+                # If we can't parse the number, treat as literal
+                print(f"Tau rule: Could not parse number from {CE}, treating as literal")
+                self.stack.append(CE)
+        
+        # Rule 3, 4, 6, 7, NEW: If CE is "gamma"
+        elif CE == "gamma":
+            if len(self.stack) >= 1:
+                top_element = self.stack.pop()
+                print(f"Gamma: popped top element: {top_element} (type: {type(top_element)})")
+                
+                # NEW RULE: If top element is a tuple, pop index I and push back I-th element
+                if isinstance(top_element, str) and top_element.startswith('(') and top_element.endswith(')'):
+                    if len(self.stack) >= 1:
+                        index_element = self.stack.pop()
+                        print(f"Gamma tuple indexing: tuple={top_element}, index={index_element}")
+                        
+                        # Parse the tuple to get elements
+                        tuple_elements = self.parse_tuple(top_element)
+                        
+                        # REVERSE the tuple before indexing
+                        reversed_tuple = tuple_elements[::-1]
+                        print(f"Original tuple elements: {tuple_elements}")
+                        print(f"Reversed tuple elements: {reversed_tuple}")
+                        
+                        # Convert index to integer if it's a string
+                        try:
+                            if isinstance(index_element, str):
+                                index = int(index_element)
+                            else:
+                                index = index_element
+                            
+                            # Check if index is valid (1-based indexing on reversed tuple)
+                            if 1 <= index <= len(reversed_tuple):
+                                selected_element = reversed_tuple[index - 1]  # Convert to 0-based
+                                print(f"Selected element {index} from reversed tuple: {selected_element}")
+                                self.stack.append(selected_element)
+                            else:
+                                print(f"Index {index} out of bounds for tuple with {len(reversed_tuple)} elements")
+                                self.stack.append(None)  # Push nil for out of bounds
+                        except (ValueError, TypeError):
+                            print(f"Invalid index: {index_element}")
+                            self.stack.append(None)  # Push nil for invalid index
+                    else:
+                        # Put tuple back if no index available
+                        print("Gamma tuple indexing: no index element available")
+                        self.stack.append(top_element)
+                
+                # Rule 6: If top element is "Y"
+                elif top_element == "Y":
+                    if len(self.stack) >= 1:
+                        lambda_element = self.stack.pop()
+                        if isinstance(lambda_element, dict) and lambda_element.get('type') == 'lambda':
+                            # Create neeta object with c, x, k
+                            neeta_obj = {
+                                'type': 'neeta',
+                                'env': lambda_element['env'],  # c
+                                'params': lambda_element['params'],  # x (now list)
+                                'k': lambda_element['k']  # k
+                            }
+                            self.stack.append(neeta_obj)
+                        else:
+                            # Put back if not lambda
+                            self.stack.append(lambda_element)
+                            self.stack.append(top_element)
+                    else:
+                        # Put back if no second element
+                        self.stack.append(top_element)
+                
+                # Rule 7: If top element is neeta
+                elif isinstance(top_element, dict) and top_element.get('type') == 'neeta':
+                    # Push lambda with c, x, k
+                    lambda_obj = {
+                        'type': 'lambda',
+                        'env': top_element['env'],  # c
+                        'params': top_element['params'],  # x (now list)
+                        'k': top_element['k']  # k
+                    }
+                    # Push neeta back
+                    self.stack.append(top_element)
+                    self.stack.append(lambda_obj)
+                    
+                    self.control.append("gamma")
+                    self.control.append("gamma")
+                
+                # Rule 4 (Enhanced): If top element is lambda
+                elif isinstance(top_element, dict) and top_element.get('type') == 'lambda':
+                    if len(self.stack) >= 1:
+                        rand = self.stack.pop()
+                        print(f"Gamma: applying lambda to {rand}")
+                        
+                        base_env = top_element['env']
+                        param_list = top_element['params']
+                        
+                        # NEW RULE: Multi-parameter lambda with tuple destructuring
+                        if len(param_list) > 1:
+                            # Multi-parameter lambda - expect tuple
+                            tuple_elements = self.parse_tuple(rand)
+                            print(f"Multi-param lambda: params={param_list}, tuple_elements={tuple_elements}")
+                            
+                            # Create variable bindings: T=second element, N=first element (swapped)
+                            var_bindings = {}
+                            # For lambda5T,N with tuple (5, (5,4,3,2,1)): T should get (5,4,3,2,1), N should get 5
+                            if len(param_list) == 2 and len(tuple_elements) >= 2:
+                                var_bindings[param_list[0]] = tuple_elements[1]  # T gets second element
+                                var_bindings[param_list[1]] = tuple_elements[0]  # N gets first element
+                                print(f"Binding {param_list[0]} = {var_bindings[param_list[0]]}")
+                                print(f"Binding {param_list[1]} = {var_bindings[param_list[1]]}")
+                            else:
+                                # Fallback to original order for other cases
+                                for i, param_name in enumerate(param_list):
+                                    if i < len(tuple_elements):
+                                        var_bindings[param_name] = tuple_elements[i]
+                                    else:
+                                        # If not enough tuple elements, bind to nil/None
+                                        var_bindings[param_name] = None
+                                    print(f"Binding {param_name} = {var_bindings[param_name]}")
+                            
+                            # Create new environment with all bindings
+                            new_env = self.create_new_environment(base_env, var_bindings)
+                        else:
+                            # Single parameter lambda - original behavior
+                            param_name = param_list[0]
+                            new_env = self.create_new_environment(base_env, (param_name, rand))
+                        
+                        # Push new environment onto stack
+                        self.stack.append(new_env)
+                        
+                        # Push new environment and corresponding delta onto control
+                        delta_name = f"delta{top_element['k']}"
+                        self.control.append(new_env)
+                        self.control.append(delta_name)
+                    else:
+                        # Put back if no second element
+                        self.stack.append(top_element)
+                
+                # Rule 3: Regular function application
+                else:
+                    if len(self.stack) >= 1:
+                        rand = self.stack.pop()
+                        print(f"Gamma: applying {top_element} to {rand}")
+                        result = self.apply_rator_rand(top_element, rand)
+                        self.stack.append(result)
+                    else:
+                        # Put back if no second element
+                        print(f"Gamma: not enough elements, putting back {top_element}")
+                        self.stack.append(top_element)
+        
+        # Handle delta expansion
+        elif isinstance(CE, str) and CE.startswith('delta'):
+            if CE in self.deltas:
+                # Replace delta with its contents in control
+                # Add delta contents in correct order (rightmost first since we pop from right)
+                delta_contents = self.deltas[CE].copy()
+                # Extend control with delta contents in original order
+                self.control.extend(delta_contents)
+            else:
+                print(f"Unknown delta: {CE}")
+        
+        # Rule 5: If CE is ek (environment marker)
+        elif isinstance(CE, str) and CE.startswith('e') and CE != "eq":
+            if len(self.stack) >= 2:
+                first_popped = self.stack.pop()
+                second_popped = self.stack.pop()
+                # Push back first popped element
+                self.stack.append(first_popped)
+            else:
+                # If not enough elements, just push environment marker
+                self.stack.append(CE)
+        
+        # Handle literals
+        else:
+            self.stack.append(CE)
+        
+        return True
+    
+    def run(self):
+        """Run CSE machine until control is empty"""
+        step_count = 0
+        while self.control :  # Safety limit
+            if not self.step():
+                break
+            step_count += 1
+        
+        print(f"\nFinal state after {step_count} steps:")
+        print(f"Stack: {self.stack}")
+        print(f"Control: {self.control}")
+        return self.stack[-1] if self.stack else None
+
+# Initialize and run the machine
+if __name__ == "__main__":
+    machine = CSEMachine()
+    
+    # Initial state: Stack has e0, Control has e0, delta0
+    machine.stack = ["e0"]
+    machine.control = ["e0", "delta0"]
+    
+    print("Initial state:")
+    print(f"Stack: {machine.stack}")
+    print(f"Control: {machine.control}")
+    print(f"Environment e0: {machine.environments['e0']}")
+    print("\nStarting execution:\n")
+    
+    result = machine.run()
+    print(f"\nFinal result: {result}")
