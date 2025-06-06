@@ -65,12 +65,6 @@ def main():
     machine.stack = ["e0"]
     machine.control = ["e0", "delta0"]
     
-    print("Initial state:")
-    print(f"Stack: {machine.stack}")
-    print(f"Control: {machine.control}")
-    print(f"Environment e0: {machine.environments['e0']}")
-    print("\nStarting execution:\n")
-    
     result = machine.run()
     print(f"\nFinal result: {result}")
 
