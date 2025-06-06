@@ -1,20 +1,11 @@
 class CSEMachine:
-    def __init__(self):
+    def __init__(self, control_structures):
         self.control = []  # Control stack (LIFO - rightmost element is popped first)
         self.stack = []    # Stack (LIFO)
         self.environments = {"e0": {}}  # Environment storage
         self.env_counter = 0  # To generate new environment names
         
-        self.deltas = {
-            "delta0": ["gamma", "lambda1Sum", "lambda2A"],
-            "delta1": ["gamma", "Print", "gamma", "Sum", "tau", "1", "2", "3", "4", "5"],
-            "delta2": ["gamma", "lambda3Psum", "gamma", "Y", "lambda4Psum"],
-            "delta3": ["gamma", "Psum", "tau5", "A", "gamma", "Order", "A"],
-            "delta4": ["lambda5T,N"],
-            "delta5": ["delta6", "delta7", "beta", "eq", "N", "0"],
-            "delta6": ["0"],
-            "delta7": ["+", "gamma", "Psum", "tau2", "T", "-", "N", "1", "gamma", "T", "N"],
-        }
+        self.deltas = control_structures
         
         # Built-in functions
         self.builtins = {
@@ -636,18 +627,18 @@ class CSEMachine:
         return self.stack[-1] if self.stack else None
 
 # Initialize and run the machine
-if __name__ == "__main__":
-    machine = CSEMachine()
+# if __name__ == "__main__":
+#     machine = CSEMachine()
     
-    # Initial state: Stack has e0, Control has e0, delta0
-    machine.stack = ["e0"]
-    machine.control = ["e0", "delta0"]
+#     # Initial state: Stack has e0, Control has e0, delta0
+#     machine.stack = ["e0"]
+#     machine.control = ["e0", "delta0"]
     
-    print("Initial state:")
-    print(f"Stack: {machine.stack}")
-    print(f"Control: {machine.control}")
-    print(f"Environment e0: {machine.environments['e0']}")
-    print("\nStarting execution:\n")
+#     print("Initial state:")
+#     print(f"Stack: {machine.stack}")
+#     print(f"Control: {machine.control}")
+#     print(f"Environment e0: {machine.environments['e0']}")
+#     print("\nStarting execution:\n")
     
-    result = machine.run()
-    print(f"\nFinal result: {result}")
+#     result = machine.run()
+#     print(f"\nFinal result: {result}")

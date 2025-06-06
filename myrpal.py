@@ -4,6 +4,7 @@ from Lexical_Analyzer.lexical_analyzer import tokenize, show_tokens
 from Parser.parser import RPALParser
 from Standardizer.standaradizer import build_tree, standardize_tree, print_tree
 from CSE_Machine.control_structures import ControlStructureGenerator
+from CSE_Machine.cseMachine import CSEMachine
 
 def main():
     parser = argparse.ArgumentParser(description='Run RPAL programs.')
@@ -57,6 +58,21 @@ def main():
         for name, items in control_structures.items():
             print(f"{name} = {' '.join(items)}")
         return
+    
+    machine = CSEMachine(control_structures)
+    
+    # Initial state: Stack has e0, Control has e0, delta0
+    machine.stack = ["e0"]
+    machine.control = ["e0", "delta0"]
+    
+    print("Initial state:")
+    print(f"Stack: {machine.stack}")
+    print(f"Control: {machine.control}")
+    print(f"Environment e0: {machine.environments['e0']}")
+    print("\nStarting execution:\n")
+    
+    result = machine.run()
+    print(f"\nFinal result: {result}")
 
 if __name__ == "__main__":
     main()
