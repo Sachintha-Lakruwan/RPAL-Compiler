@@ -2,7 +2,7 @@ import argparse
 import tokenize
 from Lexical_Analyzer.lexical_analyzer import tokenize, show_tokens
 from Parser.parser import RPALParser
-from Standardizer.standaradizer import build_tree, standardize_tree, print_tree
+from Standardizer.standardizer import build_tree, standardize_tree, print_tree
 from CSE_Machine.control_structures import ControlStructureGenerator
 from CSE_Machine.cseMachine import CSEMachine
 
