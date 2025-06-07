@@ -13,7 +13,7 @@ class TreeNode:
 def standardize_tree(node):
     for i in range(len(node.children)):
         node.children[i] = standardize_tree(node.children[i])
-
+    
     if node.value == "let":
         node.value = "gamma"
         P = node.children[1]
@@ -21,11 +21,10 @@ def standardize_tree(node):
         node.children[1] = E
         node.children[0].children[1] = P
         node.children[0].value = "lambda"
-
+    
     elif node.value == "where":
         P = node.children[0]
         where_child = node.children[1]
-
         if where_child.value == "=":
             X = where_child.children[0]
             E = where_child.children[1]
@@ -34,7 +33,7 @@ def standardize_tree(node):
             lambda_node.add_child(P)
             node.value = "gamma"
             node.children = [lambda_node, E]
-
+    
     elif node.value == "within":
         X1 = node.children[0].children[0]
         E1 = node.children[0].children[1]
@@ -47,7 +46,7 @@ def standardize_tree(node):
         gamma.children = [lamda, E1]
         node.children[0] = X2
         node.children[1] = gamma
-
+    
     elif node.value == "rec":
         X = node.children[0].children[0]
         E = node.children[0].children[1]
@@ -58,7 +57,7 @@ def standardize_tree(node):
         gamma.children = [Y, lamda]
         node.value = "="
         node.children = [X, gamma]
-
+    
     elif node.value == "function_form":
         P = node.children[0]
         E = node.children[-1]
@@ -73,7 +72,52 @@ def standardize_tree(node):
             lam = new_lam
         node.value = "="
         node.children = [P, lam]
-
+    
+    elif node.value == "@":
+        
+        gamma1 = TreeNode("gamma")
+        E1 = node.children[0]
+        N = node.children[1]
+        E2 = node.children[2]
+        
+        gamma1.children = [N, E1]
+        node.value = "gamma"
+        node.children = [gamma1, E2]
+    
+    elif node.value == "and":
+        
+        comma = TreeNode(",")
+        tau = TreeNode("tau")
+        
+        for equal in node.children:
+            X = equal.children[0]
+            E = equal.children[1]
+            comma.add_child(X)
+            tau.add_child(E)
+        
+        node.value = "="
+        node.children = [comma, tau]
+    
+    elif node.value == "lambda":
+        
+        if len(node.children) > 2:
+            E = node.children[-1]  # Last child is the expression
+            variables = node.children[:-1]  # All but last are variables
+            
+            # Create nested lambda structure
+            current_lambda = node
+            current_lambda.children = [variables[0]]  # First variable stays with current node
+            
+            # Create nested lambdas for remaining variables
+            for i in range(1, len(variables)):
+                new_lambda = TreeNode("lambda")
+                new_lambda.add_child(variables[i])
+                current_lambda.add_child(new_lambda)
+                current_lambda = new_lambda
+            
+            # Add the expression to the innermost lambda
+            current_lambda.add_child(E)
+    
     return node
 
 
