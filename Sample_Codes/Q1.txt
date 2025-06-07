@@ -1,0 +1,8 @@
+let check_number n =
+  (n > 0 -> 'Positive' |
+   n < 0 -> 'Negative' |
+   'Zero')
+
+in
+
+Print( check_number 6 )

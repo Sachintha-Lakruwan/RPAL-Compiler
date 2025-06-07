@@ -1,0 +1,8 @@
+let greatest a b c =
+  let max_ab = (a > b -> a | b)
+  in
+  max_ab > c -> max_ab | c
+
+in
+
+Print( greatest 10 6 8)

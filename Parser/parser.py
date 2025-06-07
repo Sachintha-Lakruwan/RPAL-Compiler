@@ -141,7 +141,6 @@ class RPALParser:
         else:
             print("No tokens available for parsing.")
 
-
     # Ew	->T 'where' Dr			=> 'where'
     # 		->T;
 
