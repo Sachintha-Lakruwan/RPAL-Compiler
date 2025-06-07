@@ -7,17 +7,35 @@ class CSEMachine:
         
         self.deltas = control_structures
         
-        # Built-in functions
         self.builtins = {
+            # Existing builtins
             "Print": self._builtin_print,
             "Order": self._builtin_order,
             "eq": self._builtin_eq,
+            
+            # Truth value operations
+            "or": self._builtin_or,
+            "not": self._builtin_not,
+            "ne": self._builtin_ne,
+            
+            # Integer operations (additional ones)
+            "**": self._builtin_power,
+            "ls": self._builtin_ls,
+            "gr": self._builtin_gr,
+            "le": self._builtin_le,
+            "ge": self._builtin_ge,
+            
+            # String operations
+            "Stem": self._builtin_stem,
+            "Stern": self._builtin_stern,
+            "Conc": self._builtin_conc,
         }
         
-        # Binary operators
+        # Binary operators (updated with new ones)
         self.binary_operators = {
             '+', '-', '*', '<', '>', '&', '.', '@', '/', ':', '=', '˜', '|',
-            '!', '#', '%', 'ˆ', '_', '[', ']', '{', '}', '"', "'", '?'
+            '!', '#', '%', 'ˆ', '_', '[', ']', '{', '}', '"', "'", '?',
+            '**', 'eq', 'ne', 'ls', 'gr', 'le', 'ge', 'or', 'not'
         }
     
     def _builtin_print(self, value):
@@ -68,6 +86,182 @@ class CSEMachine:
         
         return converted_val1 == converted_val2
     
+    # Truth value operations
+    def _builtin_or(self, val1, val2):
+        """Logical OR operation"""
+        def is_truthy(val):
+            if isinstance(val, bool):
+                return val
+            if isinstance(val, str):
+                return val.lower() in ['true', '1', 'yes'] or (val.isdigit() and int(val) != 0)
+            if isinstance(val, (int, float)):
+                return val != 0
+            return bool(val)
+        
+        result = is_truthy(val1) or is_truthy(val2)
+        print(f"OR operation: {val1} or {val2} = {result}")
+        return result
+    
+    def _builtin_not(self, value):
+        """Logical NOT operation"""
+        def is_truthy(val):
+            if isinstance(val, bool):
+                return val
+            if isinstance(val, str):
+                return val.lower() in ['true', '1', 'yes'] or (val.isdigit() and int(val) != 0)
+            if isinstance(val, (int, float)):
+                return val != 0
+            return bool(val)
+        
+        result = not is_truthy(value)
+        print(f"NOT operation: not {value} = {result}")
+        return result
+    
+    def _builtin_ne(self, val1, val2):
+        """Not equal comparison"""
+        result = not self._builtin_eq(val1, val2)
+        print(f"NE comparison: {val1} != {val2} = {result}")
+        return result
+    
+    # Integer operations
+    def _builtin_power(self, val1, val2):
+        """Power operation (**)"""
+        def convert_if_number(val):
+            if isinstance(val, str) and val.isdigit():
+                return int(val)
+            elif isinstance(val, str) and val.lstrip('-').isdigit():
+                return int(val)
+            return val
+        
+        num1 = convert_if_number(val1)
+        num2 = convert_if_number(val2)
+        
+        if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
+            result = num1 ** num2
+            print(f"Power operation: {val1} ** {val2} = {result}")
+            return result
+        else:
+            print(f"Power operation failed: {val1} ** {val2} (not numbers)")
+            return f"Error: Cannot compute power of {val1} and {val2}"
+    
+    def _builtin_ls(self, val1, val2):
+        """Less than operation (ls)"""
+        def convert_if_number(val):
+            if isinstance(val, str) and val.isdigit():
+                return int(val)
+            elif isinstance(val, str) and val.lstrip('-').isdigit():
+                return int(val)
+            return val
+        
+        num1 = convert_if_number(val1)
+        num2 = convert_if_number(val2)
+        
+        if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
+            result = num1 < num2
+            print(f"Less than operation: {val1} < {val2} = {result}")
+            return result
+        else:
+            # String comparison fallback
+            result = str(val1) < str(val2)
+            print(f"String less than operation: {val1} < {val2} = {result}")
+            return result
+    
+    def _builtin_gr(self, val1, val2):
+        """Greater than operation (gr)"""
+        def convert_if_number(val):
+            if isinstance(val, str) and val.isdigit():
+                return int(val)
+            elif isinstance(val, str) and val.lstrip('-').isdigit():
+                return int(val)
+            return val
+        
+        num1 = convert_if_number(val1)
+        num2 = convert_if_number(val2)
+        
+        if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
+            result = num1 > num2
+            print(f"Greater than operation: {val1} > {val2} = {result}")
+            return result
+        else:
+            # String comparison fallback
+            result = str(val1) > str(val2)
+            print(f"String greater than operation: {val1} > {val2} = {result}")
+            return result
+    
+    def _builtin_le(self, val1, val2):
+        """Less than or equal operation (le)"""
+        def convert_if_number(val):
+            if isinstance(val, str) and val.isdigit():
+                return int(val)
+            elif isinstance(val, str) and val.lstrip('-').isdigit():
+                return int(val)
+            return val
+        
+        num1 = convert_if_number(val1)
+        num2 = convert_if_number(val2)
+        
+        if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
+            result = num1 <= num2
+            print(f"Less than or equal operation: {val1} <= {val2} = {result}")
+            return result
+        else:
+            # String comparison fallback
+            result = str(val1) <= str(val2)
+            print(f"String less than or equal operation: {val1} <= {val2} = {result}")
+            return result
+    
+    def _builtin_ge(self, val1, val2):
+        """Greater than or equal operation (ge)"""
+        def convert_if_number(val):
+            if isinstance(val, str) and val.isdigit():
+                return int(val)
+            elif isinstance(val, str) and val.lstrip('-').isdigit():
+                return int(val)
+            return val
+        
+        num1 = convert_if_number(val1)
+        num2 = convert_if_number(val2)
+        
+        if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
+            result = num1 >= num2
+            print(f"Greater than or equal operation: {val1} >= {val2} = {result}")
+            return result
+        else:
+            # String comparison fallback
+            result = str(val1) >= str(val2)
+            print(f"String greater than or equal operation: {val1} >= {val2} = {result}")
+            return result
+    
+    # String operations
+    def _builtin_stem(self, string_val):
+        """Return the first character of a string (Stem S)"""
+        if isinstance(string_val, str) and len(string_val) > 0:
+            result = string_val[0]
+            print(f"Stem operation: Stem({string_val}) = '{result}'")
+            return result
+        else:
+            print(f"Stem operation failed: {string_val} is not a valid string")
+            return ""
+    
+    def _builtin_stern(self, string_val):
+        """Remove the first character from a string (Stern S)"""
+        if isinstance(string_val, str) and len(string_val) > 0:
+            result = string_val[1:]
+            print(f"Stern operation: Stern({string_val}) = '{result}'")
+            return result
+        elif isinstance(string_val, str):
+            print(f"Stern operation: Stern({string_val}) = '' (empty string)")
+            return ""
+        else:
+            print(f"Stern operation failed: {string_val} is not a valid string")
+            return ""
+    
+    def _builtin_conc(self, str1, str2):
+        """Concatenate two strings (Conc S T)"""
+        result = str(str1) + str(str2)
+        print(f"Conc operation: Conc({str1}, {str2}) = '{result}'")
+        return result
+    
     def apply_binary_operator(self, operator, left_operand, right_operand):
         """Apply binary operator to two operands"""
         try:
@@ -75,11 +269,22 @@ class CSEMachine:
             def convert_if_number(val):
                 if isinstance(val, str) and val.isdigit():
                     return int(val)
+                elif isinstance(val, str) and val.lstrip('-').isdigit():
+                    return int(val)
                 return val
             
             left = convert_if_number(left_operand)
             right = convert_if_number(right_operand)
             
+            # Handle built-in operations first
+            if operator in self.builtins:
+                if operator in ['or', 'eq', 'ne', 'ls', 'gr', 'le', 'ge', '**']:
+                    return self.builtins[operator](left_operand, right_operand)
+                elif operator == 'not':
+                    # NOT is unary, but if used as binary, apply to left operand
+                    return self.builtins[operator](left_operand)
+            
+            # Original binary operations
             if operator == '+':
                 return left + right
             elif operator == '-':
