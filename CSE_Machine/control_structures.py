@@ -23,10 +23,16 @@ class ControlStructureGenerator:
                 body = node.children[1]
                 
                 # Get the children of the comma node
+                
                 if len(comma_node.children) >= 2:
-                    T = comma_node.children[0].value
-                    N = comma_node.children[1].value
-                    lam_name = f"lambda5{T},{N}"
+                    # Extract values from all children
+                    values = [child.value for child in comma_node.children]
+                    
+                    # Create comma-separated string from all values
+                    values_str = ','.join(map(str, values))
+                    
+                    # Generate lambda name with all values
+                    lam_name = f"lambda5{values_str}"
                 else:
                     # Fallback if comma doesn't have enough children
                     lam_name = f"lambda{self.delta_counter}"
