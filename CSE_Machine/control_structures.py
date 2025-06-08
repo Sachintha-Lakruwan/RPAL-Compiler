@@ -32,7 +32,7 @@ class ControlStructureGenerator:
                     values_str = ','.join(map(str, values))
                     
                     # Generate lambda name with all values
-                    lam_name = f"lambda5{values_str}"
+                    lam_name = f"lambda{self.delta_counter}{values_str}"
                 else:
                     # Fallback if comma doesn't have enough children
                     lam_name = f"lambda{self.delta_counter}"
