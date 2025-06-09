@@ -66,7 +66,7 @@ def main():
     machine.control = ["e0", "delta0"]
     
     result = machine.run()
-    print(f"\nFinal result: {result}")
+    print(f"Output of the above program is:\n{result}")
 
 if __name__ == "__main__":
     main()

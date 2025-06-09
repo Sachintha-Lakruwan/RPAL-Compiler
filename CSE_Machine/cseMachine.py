@@ -45,7 +45,7 @@ class CSEMachine:
         }
     
     def _builtin_print(self, value):
-        print(f"Output: {value}")
+        # print(f"Output: {value}")
         return value
     
     def _builtin_order(self, value):
@@ -88,7 +88,7 @@ class CSEMachine:
         elif isinstance(converted_val2, int) and not isinstance(converted_val1, int):
             converted_val1 = convert_if_number(val1)
         
-        print(f"Eq comparison: {val1} ({type(val1)}) vs {val2} ({type(val2)}) -> {converted_val1} vs {converted_val2}")
+        # print(f"Eq comparison: {val1} ({type(val1)}) vs {val2} ({type(val2)}) -> {converted_val1} vs {converted_val2}")
         
         return converted_val1 == converted_val2
     
@@ -105,7 +105,7 @@ class CSEMachine:
             return bool(val)
         
         result = is_truthy(val1) or is_truthy(val2)
-        print(f"OR operation: {val1} or {val2} = {result}")
+        # print(f"OR operation: {val1} or {val2} = {result}")
         return result
     
     def _builtin_not(self, value):
@@ -120,13 +120,13 @@ class CSEMachine:
             return bool(val)
         
         result = not is_truthy(value)
-        print(f"NOT operation: not {value} = {result}")
+        # print(f"NOT operation: not {value} = {result}")
         return result
     
     def _builtin_ne(self, val1, val2):
         """Not equal comparison"""
         result = not self._builtin_eq(val1, val2)
-        print(f"NE comparison: {val1} != {val2} = {result}")
+        # print(f"NE comparison: {val1} != {val2} = {result}")
         return result
     
     # Integer operations
@@ -144,10 +144,10 @@ class CSEMachine:
         
         if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
             result = num1 ** num2
-            print(f"Power operation: {val1} ** {val2} = {result}")
+            # print(f"Power operation: {val1} ** {val2} = {result}")
             return result
         else:
-            print(f"Power operation failed: {val1} ** {val2} (not numbers)")
+            # print(f"Power operation failed: {val1} ** {val2} (not numbers)")
             return f"Error: Cannot compute power of {val1} and {val2}"
     
     def _builtin_neg(self, value):
@@ -167,10 +167,10 @@ class CSEMachine:
         
         if isinstance(num, (int, float)):
             result = -num
-            print(f"Negation operation: neg({value}) = {result}")
+            # print(f"Negation operation: neg({value}) = {result}")
             return result
         else:
-            print(f"Negation operation failed: neg({value}) (not a number)")
+            # print(f"Negation operation failed: neg({value}) (not a number)")
             return f"Error: Cannot negate non-numeric value {value}"
     
     def _builtin_ls(self, val1, val2):
@@ -208,12 +208,12 @@ class CSEMachine:
         
         if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
             result = num1 > num2
-            print(f"Greater than operation: {val1} > {val2} = {result}")
+            # print(f"Greater than operation: {val1} > {val2} = {result}")
             return result
         else:
             # String comparison fallback
             result = str(val1) > str(val2)
-            print(f"String greater than operation: {val1} > {val2} = {result}")
+            # print(f"String greater than operation: {val1} > {val2} = {result}")
             return result
     
     def _builtin_le(self, val1, val2):
@@ -230,12 +230,12 @@ class CSEMachine:
         
         if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
             result = num1 <= num2
-            print(f"Less than or equal operation: {val1} <= {val2} = {result}")
+            # print(f"Less than or equal operation: {val1} <= {val2} = {result}")
             return result
         else:
             # String comparison fallback
             result = str(val1) <= str(val2)
-            print(f"String less than or equal operation: {val1} <= {val2} = {result}")
+            # print(f"String less than or equal operation: {val1} <= {val2} = {result}")
             return result
     
     def _builtin_ge(self, val1, val2):
@@ -252,12 +252,12 @@ class CSEMachine:
         
         if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
             result = num1 >= num2
-            print(f"Greater than or equal operation: {val1} >= {val2} = {result}")
+            # print(f"Greater than or equal operation: {val1} >= {val2} = {result}")
             return result
         else:
             # String comparison fallback
             result = str(val1) >= str(val2)
-            print(f"String greater than or equal operation: {val1} >= {val2} = {result}")
+            # print(f"String greater than or equal operation: {val1} >= {val2} = {result}")
             return result
     
     # String operations
@@ -265,29 +265,29 @@ class CSEMachine:
         """Return the first character of a string (Stem S)"""
         if isinstance(string_val, str) and len(string_val) > 0:
             result = string_val[0]
-            print(f"Stem operation: Stem({string_val}) = '{result}'")
+            # print(f"Stem operation: Stem({string_val}) = '{result}'")
             return result
         else:
-            print(f"Stem operation failed: {string_val} is not a valid string")
+            # print(f"Stem operation failed: {string_val} is not a valid string")
             return ""
     
     def _builtin_stern(self, string_val):
         """Remove the first character from a string (Stern S)"""
         if isinstance(string_val, str) and len(string_val) > 0:
             result = string_val[1:]
-            print(f"Stern operation: Stern({string_val}) = '{result}'")
+            # print(f"Stern operation: Stern({string_val}) = '{result}'")
             return result
         elif isinstance(string_val, str):
-            print(f"Stern operation: Stern({string_val}) = '' (empty string)")
+            # print(f"Stern operation: Stern({string_val}) = '' (empty string)")
             return ""
         else:
-            print(f"Stern operation failed: {string_val} is not a valid string")
+            # print(f"Stern operation failed: {string_val} is not a valid string")
             return ""
     
     def _builtin_conc(self, str1, str2):
         """Concatenate two strings (Conc S T)"""
         result = str(str1) + str(str2)
-        print(f"Conc operation: Conc({str1}, {str2}) = '{result}'")
+        # print(f"Conc operation: Conc({str1}, {str2}) = '{result}'")
         return result
     
     def apply_unary_operator(self, operator, operand):
@@ -562,13 +562,13 @@ class CSEMachine:
         if callable(rator):
             try:
                 result = rator(rand)
-                print(f"Applied {rator.__name__ if hasattr(rator, '__name__') else rator} to {rand} = {result}")
+                # print(f"Applied {rator.__name__ if hasattr(rator, '__name__') else rator} to {rand} = {result}")
                 return result
             except Exception as e:
-                print(f"Error applying {rator} to {rand}: {e}")
+                # print(f"Error applying {rator} to {rand}: {e}")
                 return f"Error applying {rator} to {rand}"
         else:
-            print(f"Cannot apply {rator} to {rand} - not callable")
+            # print(f"Cannot apply {rator} to {rand} - not callable")
             return f"Cannot apply {rator} to {rand}"
     
     def step(self):
@@ -579,10 +579,10 @@ class CSEMachine:
         # Pop rightmost element from control (CE)
         CE = self.control.pop()
         
-        print(f"CE: {CE}")
-        print(f"Control: {self.control}")
-        print(f"Stack: {self.stack}")
-        print("---")
+        # print(f"CE: {CE}")
+        # print(f"Control: {self.control}")
+        # print(f"Stack: {self.stack}")
+        # print("---")
         
         # NEW RULE: Unary Operators (like neg, not)
         if CE in self.unary_operators:
@@ -590,17 +590,17 @@ class CSEMachine:
                 # Pop one element from stack
                 operand = self.stack.pop()
                 
-                print(f"Unary operator {CE}: operand={operand}")
+                # print(f"Unary operator {CE}: operand={operand}")
                 
                 # Apply unary operator
                 result = self.apply_unary_operator(CE, operand)
                 
-                print(f"Unary operator result: {result}")
+                # print(f"Unary operator result: {result}")
                 
                 # Push result back to stack
                 self.stack.append(result)
             else:
-                print(f"Unary operator {CE}: Not enough operands on stack")
+                # print(f"Unary operator {CE}: Not enough operands on stack")
                 # Put the operator back or handle error - here we'll just push it as literal
                 self.stack.append(CE)
         
@@ -611,17 +611,17 @@ class CSEMachine:
                 left_operand = self.stack.pop()
                 right_operand = self.stack.pop()
                 
-                print(f"Binary operator {CE}: left={left_operand}, right={right_operand}")
+                # print(f"Binary operator {CE}: left={left_operand}, right={right_operand}")
                 
                 # Apply binary operator
                 result = self.apply_binary_operator(CE, left_operand, right_operand)
                 
-                print(f"Binary operator result: {result}")
+                # print(f"Binary operator result: {result}")
                 
                 # Push result back to stack
                 self.stack.append(result)
             else:
-                print(f"Binary operator {CE}: Not enough operands on stack")
+                # print(f"Binary operator {CE}: Not enough operands on stack")
                 # Put the operator back or handle error - here we'll just push it as literal
                 self.stack.append(CE)
         
@@ -632,17 +632,17 @@ class CSEMachine:
                 right_operand = self.stack.pop()
                 left_operand = self.stack.pop()
                 
-                print(f"Eq operation: left={left_operand}, right={right_operand}")
+                # print(f"Eq operation: left={left_operand}, right={right_operand}")
                 
                 # Apply equality comparison
                 result = self._builtin_eq(left_operand, right_operand)
                 
-                print(f"Eq result: {result}")
+                # print(f"Eq result: {result}")
                 
                 # Push result back to stack
                 self.stack.append(result)
             else:
-                print("Eq operation: Not enough operands on stack")
+                # print("Eq operation: Not enough operands on stack")
                 self.stack.append(CE)
         
         
@@ -686,7 +686,7 @@ class CSEMachine:
                 D2 = self.control.pop()  # Rightmost first
                 D1 = self.control.pop()
                 
-                print(f"Beta rule: IsTrue={IsTrue}, D1={D1}, D2={D2}")
+                # print(f"Beta rule: IsTrue={IsTrue}, D1={D1}, D2={D2}")
                 
                 # Choose based on IsTrue value
                 if IsTrue == True or IsTrue == "true" or (isinstance(IsTrue, str) and IsTrue.lower() == "true"):
@@ -707,8 +707,8 @@ class CSEMachine:
                     else:
                         # If D2 is not a delta, push it directly
                         self.control.append(D2)
-            else:
-                print("Beta rule: Not enough elements in stack or control")
+            # else:
+                # print("Beta rule: Not enough elements in stack or control")
         
         # Rule 9: FIXED TAU RULE - If CE starts with "tau" followed by a number
         elif isinstance(CE, str) and CE.startswith('tau'):
@@ -720,7 +720,7 @@ class CSEMachine:
                     # If just "tau" with no number, pop all elements until environment marker
                     num_elements = None
                 
-                print(f"Tau rule: CE={CE}, num_elements={num_elements}")
+                # print(f"Tau rule: CE={CE}, num_elements={num_elements}")
                 
                 if num_elements is not None:
                     # Pop exactly num_elements from stack
@@ -760,21 +760,21 @@ class CSEMachine:
                 else:
                     tuple_repr = "()"
                 
-                print(f"Tau rule: Created tuple {tuple_repr} from elements {elements_to_pop}")
+                # print(f"Tau rule: Created tuple {tuple_repr} from elements {elements_to_pop}")
                 
                 # Push tuple back to stack
                 self.stack.append(tuple_repr)
                 
             except ValueError:
                 # If we can't parse the number, treat as literal
-                print(f"Tau rule: Could not parse number from {CE}, treating as literal")
+                # print(f"Tau rule: Could not parse number from {CE}, treating as literal")
                 self.stack.append(CE)
         
         # Rule 3, 4, 6, 7, NEW: If CE is "gamma"
         elif CE == "gamma":
             if len(self.stack) >= 1:
                 top_element = self.stack.pop()
-                print(f"Gamma: popped top element: {top_element} (type: {type(top_element)})")
+                # print(f"Gamma: popped top element: {top_element} (type: {type(top_element)})")
                 
                 # Convert string representations back to objects if needed
                 if isinstance(top_element, str):
@@ -782,14 +782,14 @@ class CSEMachine:
                     if top_element.startswith("{'type': 'neeta'") and top_element.endswith('}'):
                         try:
                             top_element = eval(top_element)  # Convert string to dict
-                            print(f"Converted neeta string to object: {top_element}")
+                            # print(f"Converted neeta string to object: {top_element}")
                         except:
                             pass  # Keep as string if conversion fails
                     # Check if it's a lambda object string
                     elif top_element.startswith("{'type': 'lambda'") and top_element.endswith('}'):
                         try:
                             top_element = eval(top_element)  # Convert string to dict
-                            print(f"Converted lambda string to object: {top_element}")
+                            # print(f"Converted lambda string to object: {top_element}")
                         except:
                             pass  # Keep as string if conversion fails
                 
@@ -797,15 +797,15 @@ class CSEMachine:
                 if isinstance(top_element, str) and top_element.startswith('(') and top_element.endswith(')'):
                     if len(self.stack) >= 1:
                         index_element = self.stack.pop()
-                        print(f"Gamma tuple indexing: tuple={top_element}, index={index_element}")
+                        # print(f"Gamma tuple indexing: tuple={top_element}, index={index_element}")
                         
                         # Parse the tuple to get elements
                         tuple_elements = self.parse_tuple(top_element)
                         
                         # REVERSE the tuple before indexing
                         reversed_tuple = tuple_elements[::-1]
-                        print(f"Original tuple elements: {tuple_elements}")
-                        print(f"Reversed tuple elements: {reversed_tuple}")
+                        # print(f"Original tuple elements: {tuple_elements}")
+                        # print(f"Reversed tuple elements: {reversed_tuple}")
                         
                         # Convert index to integer if it's a string
                         try:
@@ -817,17 +817,17 @@ class CSEMachine:
                             # Check if index is valid (1-based indexing on reversed tuple)
                             if 1 <= index <= len(reversed_tuple):
                                 selected_element = reversed_tuple[index - 1]  # Convert to 0-based
-                                print(f"Selected element {index} from reversed tuple: {selected_element}")
+                                # print(f"Selected element {index} from reversed tuple: {selected_element}")
                                 self.stack.append(selected_element)
                             else:
-                                print(f"Index {index} out of bounds for tuple with {len(reversed_tuple)} elements")
+                                # print(f"Index {index} out of bounds for tuple with {len(reversed_tuple)} elements")
                                 self.stack.append(None)  # Push nil for out of bounds
                         except (ValueError, TypeError):
-                            print(f"Invalid index: {index_element}")
+                            # print(f"Invalid index: {index_element}")
                             self.stack.append(None)  # Push nil for invalid index
                     else:
                         # Put tuple back if no index available
-                        print("Gamma tuple indexing: no index element available")
+                        # print("Gamma tuple indexing: no index element available")
                         self.stack.append(top_element)
                 
                 # Rule 6: If top element is "Y"
@@ -871,7 +871,7 @@ class CSEMachine:
                 elif isinstance(top_element, dict) and top_element.get('type') == 'lambda':
                     if len(self.stack) >= 1:
                         rand = self.stack.pop()
-                        print(f"Gamma: applying lambda to {rand}")
+                        # print(f"Gamma: applying lambda to {rand}")
                         
                         base_env = top_element['env']
                         param_list = top_element['params']
@@ -880,7 +880,7 @@ class CSEMachine:
                         if len(param_list) > 1:
                             # Multi-parameter lambda - expect tuple
                             tuple_elements = self.parse_tuple(rand)
-                            print(f"Multi-param lambda: params={param_list}, tuple_elements={tuple_elements}")
+                            # print(f"Multi-param lambda: params={param_list}, tuple_elements={tuple_elements}")
                             
                             # Create variable bindings: T=second element, N=first element (swapped)
                             var_bindings = {}
@@ -888,8 +888,8 @@ class CSEMachine:
                             if len(param_list) == 2 and len(tuple_elements) >= 2:
                                 var_bindings[param_list[0]] = tuple_elements[1]  # T gets second element
                                 var_bindings[param_list[1]] = tuple_elements[0]  # N gets first element
-                                print(f"Binding {param_list[0]} = {var_bindings[param_list[0]]}")
-                                print(f"Binding {param_list[1]} = {var_bindings[param_list[1]]}")
+                                # print(f"Binding {param_list[0]} = {var_bindings[param_list[0]]}")
+                                # print(f"Binding {param_list[1]} = {var_bindings[param_list[1]]}")
                             else:
                                 # Fallback to original order for other cases
                                 for i, param_name in enumerate(param_list):
@@ -898,7 +898,7 @@ class CSEMachine:
                                     else:
                                         # If not enough tuple elements, bind to nil/None
                                         var_bindings[param_name] = None
-                                    print(f"Binding {param_name} = {var_bindings[param_name]}")
+                                    # print(f"Binding {param_name} = {var_bindings[param_name]}")
                             
                             # Create new environment with all bindings
                             new_env = self.create_new_environment(base_env, var_bindings)
@@ -922,12 +922,12 @@ class CSEMachine:
                 else:
                     if len(self.stack) >= 1:
                         rand = self.stack.pop()
-                        print(f"Gamma: applying {top_element} to {rand}")
+                        # print(f"Gamma: applying {top_element} to {rand}")
                         result = self.apply_rator_rand(top_element, rand)
                         self.stack.append(result)
                     else:
                         # Put back if no second element
-                        print(f"Gamma: not enough elements, putting back {top_element}")
+                        # print(f"Gamma: not enough elements, putting back {top_element}")
                         self.stack.append(top_element)
         
         # Handle delta expansion
@@ -938,8 +938,8 @@ class CSEMachine:
                 delta_contents = self.deltas[CE].copy()
                 # Extend control with delta contents in original order
                 self.control.extend(delta_contents)
-            else:
-                print(f"Unknown delta: {CE}")
+            # else:
+            #     print(f"Unknown delta: {CE}")
         
         # Rule 5: If CE is ek (environment marker)
         elif isinstance(CE, str) and CE.startswith('e') and CE != "eq":
@@ -993,9 +993,9 @@ class CSEMachine:
                 break
             step_count += 1
         
-        print(f"\nFinal state after {step_count} steps:")
-        print(f"Stack: {self.stack}")
-        print(f"Control: {self.control}")
+        # print(f"\nFinal state after {step_count} steps:")
+        # print(f"Stack: {self.stack}")
+        # print(f"Control: {self.control}")
         return self.stack[-1] if self.stack else None
 
 # Initialize and run the machine
