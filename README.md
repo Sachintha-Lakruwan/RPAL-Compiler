@@ -1,5 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" class="logo" width="120"/>
-
 # RPAL Interpreter 🦾
 
 Welcome to the **RPAL Interpreter** project! This repository contains a full implementation of an interpreter for the Right-reference Pedagogic Algorithmic Language (RPAL), built from scratch in Python. Whether you're a student, educator, or language enthusiast, this project is designed to help you explore language processing, parsing, and functional programming concepts in a hands-on way. 🚀
@@ -8,13 +6,17 @@ Welcome to the **RPAL Interpreter** project! This repository contains a full imp
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+- [RPAL Interpreter 🦾](#rpal-interpreter-)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [Overview](#overview)
+  - [Features ✨](#features-)
+  - [Project Structure 🗂️](#project-structure-️)
+  - [Getting Started 🚦](#getting-started-)
+  - [Usage 🛠️](#usage-️)
+    - [Using Python](#using-python)
+    - [Using Makefile](#using-makefile)
+  - [Contributing 🤝](#contributing-)
+  - [License 📄](#license-)
 
 ---
 
@@ -62,9 +64,9 @@ cd RPAL-Compiler
 ```
 
 2. **Prepare your RPAL source file:**
-Write your RPAL code in a file, e.g., `input.txt`.
+   Write your RPAL code in a file, e.g., `input.txt`.
 3. **Run the interpreter:**
-Use either Python directly or the provided Makefile.
+   Use either Python directly or the provided Makefile.
 
 ---
 
@@ -80,7 +82,6 @@ python3 myrpal.py input.txt -sast     # Print the Standardized AST
 python3 myrpal.py input.txt -cs       # Print control structures
 ```
 
-
 ### Using Makefile
 
 ```bash
@@ -91,7 +92,7 @@ make sast file=input.txt    # Print the Standardized AST
 make cs file=input.txt      # Print control structures
 ```
 
-*Replace `input.txt` with your own RPAL source file name!*[^1]
+_Replace `input.txt` with your own RPAL source file name!_[^1]
 
 ---
 
@@ -112,29 +113,19 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 <!-- Emojis used: 🦾 🚀 📋 ✨ 🗂️ 🚦 🛠️ 🤝 📄 📝 -->
+
 [^1]
 
 <div style="text-align: center">⁂</div>
 
 [^1]: Document-6-3.pdf
-
 [^2]: https://www.hatica.io/blog/best-practices-for-github-readme/
-
 [^3]: https://www.codecademy.com/article/markdown-and-readme-md-files
-
 [^4]: https://markdown-all-in-one.github.io/docs/contributing/emoji.html
-
 [^5]: https://github.com/mhucka/readmine
-
 [^6]: https://dev.to/yuridevat/how-to-create-a-good-readmemd-file-4pa2
-
 [^7]: https://github.com/othneildrew/Best-README-Template
-
 [^8]: https://dev.to/github/10-standout-github-profile-readmes-h2o
-
 [^9]: https://github.com/matiassingers/awesome-readme
-
 [^10]: https://github.com/topics/interpreter
-
 [^11]: https://packaging.python.org/guides/making-a-pypi-friendly-readme/
-
