@@ -645,11 +645,7 @@ class CSEMachine:
                 print("Eq operation: Not enough operands on stack")
                 self.stack.append(CE)
         
-        # Rule 1: If CE is a variable name
-        elif isinstance(CE, str) and not CE.startswith(('lambda', 'delta', 'gamma', 'beta', 'tau', 'aug', 'e')):
-            current_env = self.get_current_environment()
-            value = self.lookup_variable(CE, current_env)
-            self.stack.append(value)
+        
         
         # Rule 2: If CE is lambda'k'x' (single parameter) or lambda'k'x1,x2...xn (multiple parameters)
         elif isinstance(CE, str) and CE.startswith('lambda'):
@@ -961,6 +957,11 @@ class CSEMachine:
             self.stack.append(CE)
         
         return True
+        # Rule 1: If CE is a variable name
+        elif isinstance(CE, str) and not CE.startswith(('lambda', 'delta', 'gamma', 'beta', 'tau', 'aug', 'e')):
+            current_env = self.get_current_environment()
+            value = self.lookup_variable(CE, current_env)
+            self.stack.append(value)
     
     def run(self):
         """Run CSE machine until control is empty"""
