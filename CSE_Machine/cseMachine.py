@@ -894,7 +894,7 @@ class CSEMachine:
                                 # Fallback to original order for other cases
                                 for i, param_name in enumerate(param_list):
                                     if i < len(tuple_elements):
-                                        var_bindings[param_name] = tuple_elements[i]
+                                        var_bindings[param_name] = tuple_elements[len(tuple_elements)-1-i]
                                     else:
                                         # If not enough tuple elements, bind to nil/None
                                         var_bindings[param_name] = None
@@ -943,30 +943,52 @@ class CSEMachine:
         
         # Rule 5: If CE is ek (environment marker)
         elif isinstance(CE, str) and CE.startswith('e') and CE != "eq":
-            if len(self.stack) >= 2:
-                first_popped = self.stack.pop()
-                second_popped = self.stack.pop()
-                # Push back first popped element
-                self.stack.append(first_popped)
+            if len(self.stack) >= 1:
+                popped_elements = []
+                found_matching_marker = False
+                
+                # Pop elements until we find the matching environment marker
+                while self.stack:
+                    popped_element = self.stack.pop()
+                    if popped_element == CE:
+                        found_matching_marker = True
+                        break
+                    popped_elements.append(popped_element)
+                
+                if found_matching_marker:
+                    # Remove the matching environment marker from control stack
+                    if CE in self.control:
+                        self.control.remove(CE)
+                    
+                    # Push back all popped elements (except the matching marker) in reverse order
+                    for element in reversed(popped_elements):
+                        self.stack.append(element)
+                else:
+                    # If matching marker not found, push back all popped elements
+                    for element in reversed(popped_elements):
+                        self.stack.append(element)
+                    # And push the CE marker as well since it wasn't found
+                    self.stack.append(CE)
             else:
-                # If not enough elements, just push environment marker
+                # If stack is empty, just push environment marker
                 self.stack.append(CE)
+
+        # Rule 1: If CE is a variable name
+        elif isinstance(CE, str) and not CE.startswith(('lambda', 'delta', 'gamma', 'beta', 'tau', 'aug', 'e')):
+            current_env = self.get_current_environment()
+            value = self.lookup_variable(CE, current_env)
+            self.stack.append(value)
         
         # Handle literals
         else:
             self.stack.append(CE)
         
         return True
-        # Rule 1: If CE is a variable name
-        elif isinstance(CE, str) and not CE.startswith(('lambda', 'delta', 'gamma', 'beta', 'tau', 'aug', 'e')):
-            current_env = self.get_current_environment()
-            value = self.lookup_variable(CE, current_env)
-            self.stack.append(value)
     
     def run(self):
         """Run CSE machine until control is empty"""
         step_count = 0
-        while self.control :  # Safety limit
+        while step_count<100000 :  # Safety limit
             if not self.step():
                 break
             step_count += 1
@@ -976,3 +998,19 @@ class CSEMachine:
         print(f"Control: {self.control}")
         return self.stack[-1] if self.stack else None
 
+# Initialize and run the machine
+# if __name__ == "__main__":
+#     machine = CSEMachine()
+    
+#     # Initial state: Stack has e0, Control has e0, delta0
+#     machine.stack = ["e0"]
+#     machine.control = ["e0", "delta0"]
+    
+#     print("Initial state:")
+#     print(f"Stack: {machine.stack}")
+#     print(f"Control: {machine.control}")
+#     print(f"Environment e0: {machine.environments['e0']}")
+#     print("\nStarting execution:\n")
+    
+#     result = machine.run()
+#     print(f"\nFinal result: {result}")
