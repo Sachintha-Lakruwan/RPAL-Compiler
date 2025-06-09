@@ -24,6 +24,7 @@ class CSEMachine:
             "gr": self._builtin_gr,
             "le": self._builtin_le,
             "ge": self._builtin_ge,
+            "neg": self._builtin_neg,  # NEW: Negation operation
             
             # String operations
             "Stem": self._builtin_stem,
@@ -36,6 +37,11 @@ class CSEMachine:
             '+', '-', '*', '<', '>', '&', '.', '@', '/', ':', '=', '˜', '|',
             '!', '#', '%', 'ˆ', '_', '[', ']', '{', '}', '"', "'", '?',
             '**', 'eq', 'ne', 'ls', 'gr', 'le', 'ge', 'or', 'not'
+        }
+        
+        # Unary operators
+        self.unary_operators = {
+            'neg', 'not'  # neg is unary, not can be both unary and binary
         }
     
     def _builtin_print(self, value):
@@ -144,6 +150,29 @@ class CSEMachine:
             print(f"Power operation failed: {val1} ** {val2} (not numbers)")
             return f"Error: Cannot compute power of {val1} and {val2}"
     
+    def _builtin_neg(self, value):
+        """Negation operation - returns negative of a number"""
+        def convert_if_number(val):
+            if isinstance(val, str) and val.isdigit():
+                return int(val)
+            elif isinstance(val, str) and val.lstrip('-').isdigit():
+                return int(val)
+            try:
+                # Try to convert to float if it's a decimal
+                return float(val)
+            except (ValueError, TypeError):
+                return val
+        
+        num = convert_if_number(value)
+        
+        if isinstance(num, (int, float)):
+            result = -num
+            print(f"Negation operation: neg({value}) = {result}")
+            return result
+        else:
+            print(f"Negation operation failed: neg({value}) (not a number)")
+            return f"Error: Cannot negate non-numeric value {value}"
+    
     def _builtin_ls(self, val1, val2):
         """Less than operation (ls)"""
         def convert_if_number(val):
@@ -158,7 +187,6 @@ class CSEMachine:
         
         if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
             result = num1 < num2
-            print(f"Less than operation: {val1} < {val2} = {result}")
             return result
         else:
             # String comparison fallback
@@ -261,6 +289,22 @@ class CSEMachine:
         result = str(str1) + str(str2)
         print(f"Conc operation: Conc({str1}, {str2}) = '{result}'")
         return result
+    
+    def apply_unary_operator(self, operator, operand):
+        """Apply unary operator to one operand"""
+        try:
+            # Handle built-in unary operations
+            if operator in self.builtins:
+                if operator == 'neg':
+                    return self.builtins[operator](operand)
+                elif operator == 'not':
+                    return self.builtins[operator](operand)
+            
+            # Add other unary operators here if needed
+            return f"Unknown unary operator: {operator}"
+                
+        except Exception as e:
+            return f"Error applying unary {operator}: {e}"
     
     def apply_binary_operator(self, operator, left_operand, right_operand):
         """Apply binary operator to two operands"""
@@ -366,46 +410,109 @@ class CSEMachine:
             return f"Error applying {operator}: {e}"
     
     def parse_tuple(self, tuple_str):
-        """Parse tuple string like '(1, 2, 3)' or '(5, (5, 4, 3, 2, 1))' into list of elements"""
-        if isinstance(tuple_str, str) and tuple_str.startswith('(') and tuple_str.endswith(')'):
-            inner = tuple_str[1:-1].strip()
-            if inner == "":
-                return []  # Empty tuple
+        
+        if not (tuple_str.startswith('(') and tuple_str.endswith(')')):
+            return [tuple_str]
+        
+        # Remove outer parentheses
+        content = tuple_str[1:-1].strip()
+        if not content:
+            return []
+        
+        elements = []
+        current_element = ""
+        bracket_count = 0
+        brace_count = 0
+        paren_count = 0
+        in_quotes = False
+        quote_char = None
+        
+        i = 0
+        while i < len(content):
+            char = content[i]
             
-            # Parse elements while respecting nested parentheses
-            elements = []
-            current_element = ""
-            paren_depth = 0
+            # Handle quotes
+            if char in ['"', "'"]:
+                if not in_quotes:
+                    in_quotes = True
+                    quote_char = char
+                elif char == quote_char:
+                    # Check if it's escaped
+                    if i > 0 and content[i-1] != '\\':
+                        in_quotes = False
+                        quote_char = None
             
-            for char in inner:
-                if char == ',' and paren_depth == 0:
-                    # Found a top-level comma separator
-                    elem = current_element.strip()
-                    if elem:
-                        # Try to convert to int if possible, otherwise keep as string
-                        try:
-                            elements.append(int(elem))
-                        except ValueError:
-                            elements.append(elem)
+            # If we're inside quotes, just add the character
+            if in_quotes:
+                current_element += char
+            else:
+                # Track nested structures
+                if char == '[':
+                    bracket_count += 1
+                elif char == ']':
+                    bracket_count -= 1
+                elif char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                elif char == '(':
+                    paren_count += 1
+                elif char == ')':
+                    paren_count -= 1
+                elif char == ',' and bracket_count == 0 and brace_count == 0 and paren_count == 0:
+                    # This is a top-level comma separator
+                    elements.append(current_element.strip())
                     current_element = ""
-                else:
-                    # Add character to current element
-                    current_element += char
-                    if char == '(':
-                        paren_depth += 1
-                    elif char == ')':
-                        paren_depth -= 1
+                    i += 1
+                    continue
+                
+                current_element += char
             
-            # Add the last element
-            elem = current_element.strip()
-            if elem:
-                try:
-                    elements.append(int(elem))
-                except ValueError:
-                    elements.append(elem)
-            
-            return elements
-        return [tuple_str]  # Not a tuple, return as single element list
+            i += 1
+        
+        # Add the last element
+        if current_element.strip():
+            elements.append(current_element.strip())
+        
+        return elements
+
+    def convert_element_to_object(self, element_str):
+        """
+        Convert a string element to its proper object representation.
+        Handles dictionaries, lists, and primitive values.
+        """
+        element_str = element_str.strip()
+        
+        # Handle dictionary objects
+        if element_str.startswith('{') and element_str.endswith('}'):
+            try:
+                # Use eval to parse the dictionary (in a real implementation, use ast.literal_eval)
+                return eval(element_str)
+            except:
+                return element_str
+        
+        # Handle list objects
+        if element_str.startswith('[') and element_str.endswith(']'):
+            try:
+                return eval(element_str)
+            except:
+                return element_str
+        
+        # Handle nil
+        if element_str == 'nil':
+            return None
+        
+        # Handle numbers
+        try:
+            if '.' in element_str:
+                return float(element_str)
+            else:
+                return int(element_str)
+        except ValueError:
+            pass
+        
+        # Return as string if nothing else matches
+        return element_str
     
     def get_current_environment(self):
         """Get current environment from top of stack"""
@@ -477,10 +584,30 @@ class CSEMachine:
         print(f"Stack: {self.stack}")
         print("---")
         
+        # NEW RULE: Unary Operators (like neg, not)
+        if CE in self.unary_operators:
+            if len(self.stack) >= 1:
+                # Pop one element from stack
+                operand = self.stack.pop()
+                
+                print(f"Unary operator {CE}: operand={operand}")
+                
+                # Apply unary operator
+                result = self.apply_unary_operator(CE, operand)
+                
+                print(f"Unary operator result: {result}")
+                
+                # Push result back to stack
+                self.stack.append(result)
+            else:
+                print(f"Unary operator {CE}: Not enough operands on stack")
+                # Put the operator back or handle error - here we'll just push it as literal
+                self.stack.append(CE)
+        
         # NEW RULE: Binary Operators
-        if CE in self.binary_operators:
+        elif CE in self.binary_operators:
             if len(self.stack) >= 2:
-                # Pop two elements from stack (right operand first, then left operand)
+                # Pop two elements from stack 
                 left_operand = self.stack.pop()
                 right_operand = self.stack.pop()
                 
@@ -518,11 +645,7 @@ class CSEMachine:
                 print("Eq operation: Not enough operands on stack")
                 self.stack.append(CE)
         
-        # Rule 1: If CE is a variable name
-        elif isinstance(CE, str) and not CE.startswith(('lambda', 'delta', 'gamma', 'beta', 'tau', 'aug', 'e')):
-            current_env = self.get_current_environment()
-            value = self.lookup_variable(CE, current_env)
-            self.stack.append(value)
+        
         
         # Rule 2: If CE is lambda'k'x' (single parameter) or lambda'k'x1,x2...xn (multiple parameters)
         elif isinstance(CE, str) and CE.startswith('lambda'):
@@ -653,6 +776,23 @@ class CSEMachine:
                 top_element = self.stack.pop()
                 print(f"Gamma: popped top element: {top_element} (type: {type(top_element)})")
                 
+                # Convert string representations back to objects if needed
+                if isinstance(top_element, str):
+                    # Check if it's a neeta object string
+                    if top_element.startswith("{'type': 'neeta'") and top_element.endswith('}'):
+                        try:
+                            top_element = eval(top_element)  # Convert string to dict
+                            print(f"Converted neeta string to object: {top_element}")
+                        except:
+                            pass  # Keep as string if conversion fails
+                    # Check if it's a lambda object string
+                    elif top_element.startswith("{'type': 'lambda'") and top_element.endswith('}'):
+                        try:
+                            top_element = eval(top_element)  # Convert string to dict
+                            print(f"Converted lambda string to object: {top_element}")
+                        except:
+                            pass  # Keep as string if conversion fails
+                
                 # NEW RULE: If top element is a tuple, pop index I and push back I-th element
                 if isinstance(top_element, str) and top_element.startswith('(') and top_element.endswith(')'):
                     if len(self.stack) >= 1:
@@ -754,7 +894,7 @@ class CSEMachine:
                                 # Fallback to original order for other cases
                                 for i, param_name in enumerate(param_list):
                                     if i < len(tuple_elements):
-                                        var_bindings[param_name] = tuple_elements[i]
+                                        var_bindings[param_name] = tuple_elements[len(tuple_elements)-1-i]
                                     else:
                                         # If not enough tuple elements, bind to nil/None
                                         var_bindings[param_name] = None
@@ -803,14 +943,41 @@ class CSEMachine:
         
         # Rule 5: If CE is ek (environment marker)
         elif isinstance(CE, str) and CE.startswith('e') and CE != "eq":
-            if len(self.stack) >= 2:
-                first_popped = self.stack.pop()
-                second_popped = self.stack.pop()
-                # Push back first popped element
-                self.stack.append(first_popped)
+            if len(self.stack) >= 1:
+                popped_elements = []
+                found_matching_marker = False
+                
+                # Pop elements until we find the matching environment marker
+                while self.stack:
+                    popped_element = self.stack.pop()
+                    if popped_element == CE:
+                        found_matching_marker = True
+                        break
+                    popped_elements.append(popped_element)
+                
+                if found_matching_marker:
+                    # Remove the matching environment marker from control stack
+                    if CE in self.control:
+                        self.control.remove(CE)
+                    
+                    # Push back all popped elements (except the matching marker) in reverse order
+                    for element in reversed(popped_elements):
+                        self.stack.append(element)
+                else:
+                    # If matching marker not found, push back all popped elements
+                    for element in reversed(popped_elements):
+                        self.stack.append(element)
+                    # And push the CE marker as well since it wasn't found
+                    self.stack.append(CE)
             else:
-                # If not enough elements, just push environment marker
+                # If stack is empty, just push environment marker
                 self.stack.append(CE)
+
+        # Rule 1: If CE is a variable name
+        elif isinstance(CE, str) and not CE.startswith(('lambda', 'delta', 'gamma', 'beta', 'tau', 'aug', 'e')):
+            current_env = self.get_current_environment()
+            value = self.lookup_variable(CE, current_env)
+            self.stack.append(value)
         
         # Handle literals
         else:
@@ -821,7 +988,7 @@ class CSEMachine:
     def run(self):
         """Run CSE machine until control is empty"""
         step_count = 0
-        while self.control :  # Safety limit
+        while step_count<10000 :  # Safety limit
             if not self.step():
                 break
             step_count += 1

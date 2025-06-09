@@ -1,4 +1,0 @@
-let
-    oddOrEven n = (n mod 2) eq 0 -> "Even" | "Odd"
-in
-    Print (oddOrEven 17)
