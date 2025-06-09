@@ -16,7 +16,6 @@ Welcome to the **RPAL Interpreter** project! This repository contains a full imp
     - [Using Python](#using-python)
     - [Using Makefile](#using-makefile)
   - [Contributing 🤝](#contributing-)
-  - [License 📄](#license-)
 
 ---
 
@@ -99,12 +98,6 @@ _Replace `input.txt` with your own RPAL source file name!_[^1]
 ## Contributing 🤝
 
 Contributions, bug reports, and suggestions are welcome! Please fork the repo and submit a pull request. For major changes, open an issue first to discuss what you would like to change.
-
----
-
-## License 📄
-
-This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
